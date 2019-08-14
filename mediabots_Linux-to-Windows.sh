@@ -1,7 +1,7 @@
 #!/bin/bash
 #
 #Vars
-echo "[Install Win for Linux edit by Haku"
+echo "[Install Win for Linux edit by Haku]"
 mounted=0
 GREEN='\033[1;32m';GREEN_D='\033[0;32m';RED='\033[0;31m';YELLOW='\033[0;33m';BLUE='\033[0;34m';NC='\033[0m'
 # Virtualization checking..
@@ -69,43 +69,3 @@ sudo mkisofs -o /sw.iso /floppy
 sudo echo 1 > /sys/kernel/mm/ksm/run
 #Free memories
 sync; sudo echo 3 > /proc/sys/vm/drop_caches
-# Gathering System information
-idx=0
-fs=($(df | awk '{print $1}'))
-for j in $(df | awk '{print $6}');do if [ $j = "/" ] ; then os=${fs[$idx]};echo $os;fi;idx=$((idx+1));done
-#
-ip=$(curl ifconfig.me)
-echo "Linux Distro : "$dist 
-virtualization=$(lscpu | grep Virtualization: | head -1 | cut -f2 -d":" | awk '{$1=$1;print}')
-echo "Virtualization : "$virtualization
-model=$(lscpu | grep "Model name:" | head -1 | cut -f2 -d":" | awk '{$1=$1;print}')
-echo "CPU Model : "$model
-cpus=$(lscpu | grep CPU\(s\) | head -1 | cut -f2 -d":" | awk '{$1=$1;print}')
-echo "No. of CPU cores : "$cpus
-if [ $dist = "Debian" ] ;then availableRAMcommand="free -m | head -2 | tail -1 | awk '{print \$4}'" ; elif [ $dist = "Ubuntu" -o $dist = "CentOS" ] ;then availableRAMcommand="free -m | tail -2 | head -1 | awk '{print \$7}'"; fi
-availableRAM=$(echo $availableRAMcommand | bash)
-echo "Available RAM : "$availableRAM" MB"
-diskNumbers=$(fdisk -l | grep "Disk /dev/" | wc -l)
-partNumbers=$(lsblk | egrep "part" | wc -l) # $(fdisk -l | grep "^/dev/" | wc -l) 
-firstDisk=$(fdisk -l | grep "Disk /dev/" | head -1 | cut -f1 -d":" | cut -f2 -d" ")
-freeDisk=$(df | grep "^/dev/" | awk '{print$1 " " $4}' | sort -g -k 2 | tail -1 | cut -f2 -d" ")
-# Show IP
-ip=$(curl ifconfig.me)
-# Windows required at least 25 GB free disk space
-firstDiskLow=0
-if [ $(expr $freeDisk / 1024 / 1024 ) -ge 25 ]; then
-	newDisk=$(expr $freeDisk \* 90 / 100 / 1024)
-	if [ $(expr $newDisk / 1024 ) -lt 25 ] ; then newDisk=25600 ; fi
-fi
-
-#
-# setting up default values
-custom_param_os="/mediabots/"$(ls /mediabots)
-custom_param_sw="/sw.iso"
-custom_param_virtio="/virtio/"$(ls /virtio)
-#
-custom_param_ram="-m "$(expr $availableRAM - 200 )"M"
-skipped=0
-partition=0
-other_drives=""
-format=",format=raw"
