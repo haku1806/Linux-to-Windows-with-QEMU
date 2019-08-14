@@ -117,11 +117,3 @@ sudo wget -P /mnt http://51.15.226.83/WS2012R2.ISO
 sudo wget -qO- /tmp https://cdn.rodney.io/content/blog/files/vkvm.tar.gz | tar xvz -C /tmp
 #sudo tmux
 echo "[ Running the KVM ]"
-custom_param_ram="-m "$(expr $availableRAM - 200 )"M"
-echo -e "Finally open ${GREEN_D}$ip:5${NC} on your VNC viewer."
-sudo /tmp/qemu-system-x86_64 -net nic -net user,hostfwd=tcp::3389-:3389 $custom_param_ram -localtime -enable-kvm -cpu host,+nx -M pc -smp $cpus -vga std -usbdevice tablet -k en-us -cdrom /mnt/WS2012R2.ISO -hda /dev/sda -boot once=d -vnc :5
-
-echo "[ Stop the KVM ]"
-echo "[Copy Command below for to continue]"
-
-echo -e "${GREEN_D}/tmp/qemu-system-x86_64 -net nic -net user,hostfwd=tcp::3389-:3389 $custom_param_ram -localtime -enable-kvm -cpu host,+nx -M pc -smp $cpus -vga std -usbdevice tablet -k en-us -hda /dev/sda -boot c -vnc :5"
