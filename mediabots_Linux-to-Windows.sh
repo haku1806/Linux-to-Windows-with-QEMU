@@ -89,6 +89,8 @@ diskNumbers=$(fdisk -l | grep "Disk /dev/" | wc -l)
 partNumbers=$(lsblk | egrep "part" | wc -l) # $(fdisk -l | grep "^/dev/" | wc -l) 
 firstDisk=$(fdisk -l | grep "Disk /dev/" | head -1 | cut -f1 -d":" | cut -f2 -d" ")
 freeDisk=$(df | grep "^/dev/" | awk '{print$1 " " $4}' | sort -g -k 2 | tail -1 | cut -f2 -d" ")
+# Show IP
+ip=$(curl ifconfig.me)
 # Windows required at least 25 GB free disk space
 firstDiskLow=0
 if [ $(expr $freeDisk / 1024 / 1024 ) -ge 25 ]; then
@@ -117,6 +119,7 @@ sudo wget -qO- /tmp https://cdn.rodney.io/content/blog/files/vkvm.tar.gz | tar x
 #sudo tmux
 echo "[ Running the KVM ]"
 custom_param_ram="-m "$(expr $availableRAM - 200 )"M"
+echo -e "Finally open ${GREEN_D}$ip:5${NC} on your VNC viewer."
 sudo /tmp/qemu-system-x86_64 -net nic -net user,hostfwd=tcp::3389-:3389 $custom_param_ram -localtime -enable-kvm -cpu host,+nx -M pc -smp $cpus -vga std -usbdevice tablet -k en-us -cdrom /mnt/WS2012R2.ISO -hda /dev/sda -boot once=d -vnc :5
 
 echo "[ Stop the KVM ]"
