@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 #Vars
+echo "[Install Win for Linux edit by Haku"
 mounted=0
 GREEN='\033[1;32m';GREEN_D='\033[0;32m';RED='\033[0;31m';YELLOW='\033[0;33m';BLUE='\033[0;34m';NC='\033[0m'
 # Virtualization checking..
@@ -32,7 +33,19 @@ fi
 sudo ln -s /usr/bin/genisoimage /usr/bin/mkisofs
 # Downloading resources
 sudo mkdir /mediabots /floppy /virtio
-
+link1_status=$(curl -Is http://51.15.226.83/WS2012R2.ISO | grep HTTP | cut -f2 -d" ")
+link2_status=$(curl -Is https://51.15.226.83/WS2012R2.ISO | grep HTTP | cut -f2 -d" ")
+#sudo wget -P /mediabots https://archive.org/download/WS2012R2/WS2012R2.ISO # Windows Server 2012 R2 
+if [ $link1_status = "200" ] ; then 
+	sudo wget -P /mnt http://hakuit.com/WS2012R2.ISO
+elif [ $link2_status = "200" -o $link2_status = "301" ] ; then 
+	sudo wget -P /mnt https://hakuit.com/WS2012R2.ISO
+else
+	echo -e "${RED}[Error]${NC} ${YELLOW}Sorry! None of Windows OS image urls are available , please report about this issue on Github page : ${NC}https://github.com/mediabots/Linux-to-Windows-with-QEMU"
+	echo "Exiting.."
+	sleep 30
+	exit 1
+fi
 sudo wget -P /floppy https://ftp.mozilla.org/pub/firefox/releases/64.0/win32/en-US/Firefox%20Setup%2064.0.exe
 sudo mv /floppy/'Firefox Setup 64.0.exe' /floppy/Firefox.exe
 sudo wget -P /floppy https://downloadmirror.intel.com/23073/eng/PROWinx64.exe # Intel Network Adapter for Windows Server 2012 R2 
@@ -52,7 +65,11 @@ sudo wget -P /virtio https://fedorapeople.org/groups/virt/virtio-win/direct-down
 # creating .iso for Windows tools & drivers
 sudo mkisofs -o /sw.iso /floppy
 #
-
+#Enabling KSM
+sudo echo 1 > /sys/kernel/mm/ksm/run
+#Free memories
+sync; sudo echo 3 > /proc/sys/vm/drop_caches
+# Gathering System information
 idx=0
 fs=($(df | awk '{print $1}'))
 for j in $(df | awk '{print $6}');do if [ $j = "/" ] ; then os=${fs[$idx]};echo $os;fi;idx=$((idx+1));done
@@ -72,7 +89,7 @@ diskNumbers=$(fdisk -l | grep "Disk /dev/" | wc -l)
 partNumbers=$(lsblk | egrep "part" | wc -l) # $(fdisk -l | grep "^/dev/" | wc -l) 
 firstDisk=$(fdisk -l | grep "Disk /dev/" | head -1 | cut -f1 -d":" | cut -f2 -d" ")
 freeDisk=$(df | grep "^/dev/" | awk '{print$1 " " $4}' | sort -g -k 2 | tail -1 | cut -f2 -d" ")
-custom_param_ram="-m "$(expr $availableRAM - 500 )"M"
+# Windows required at least 25 GB free disk space
 firstDiskLow=0
 if [ $(expr $freeDisk / 1024 / 1024 ) -ge 25 ]; then
 	newDisk=$(expr $freeDisk \* 90 / 100 / 1024)
@@ -80,15 +97,30 @@ if [ $(expr $freeDisk / 1024 / 1024 ) -ge 25 ]; then
 else
 	firstDiskLow=1
 fi
-sudo apt-get install tmux
+#
+# setting up default values
+custom_param_os="/mediabots/"$(ls /mediabots)
+custom_param_sw="/sw.iso"
+custom_param_virtio="/virtio/"$(ls /virtio)
+#
+custom_param_ram="-m "$(expr $availableRAM - 200 )"M"
+skipped=0
+partition=0
+other_drives=""
+format=",format=raw"
+
+sudo apt-get install -y tmux
 sudo dd if=/dev/zero of=/dev/sda bs=1024k count=$newDisk
 sudo mount -t tmpfs -o size=8000m tmpfs /mnt
 sudo wget -P /mnt http://51.15.226.83/WS2012R2.ISO
 sudo wget -qO- /tmp https://cdn.rodney.io/content/blog/files/vkvm.tar.gz | tar xvz -C /tmp
 sudo tmux
 echo "[ Running the KVM ]"
-
+custom_param_ram="-m "$(expr $availableRAM - 200 )"M"
 sudo /tmp/qemu-system-x86_64 -net nic -net user,hostfwd=tcp::3389-:3389 $custom_param_ram -localtime -enable-kvm -cpu host,+nx -M pc -smp $cpus -vga std -usbdevice tablet -k en-us -cdrom /mnt/WS2012R2.ISO -hda /dev/sda -boot once=d -vnc :5
 
-#sudo /tmp/qemu-system-x86_64 -net nic -net user,hostfwd=tcp::3389-:3389 $custom_param_ram -localtime -enable-kvm -cpu host,+nx -M pc -smp $cpus -vga std -usbdevice tablet -k en-us -cdrom /mnt/WS2012R2.ISO -hda /dev/sda -boot once=d -vnc :5
+echo "[ Stop the KVM ]"
+echo "[Copy Command below for to continue]"
 
+echo -e "${GREEN_D}/tmp/qemu-system-x86_64 -net nic -net user,hostfwd=tcp::3389-:3389 $custom_param_ram -localtime -enable-kvm -cpu host,+nx -M pc -smp $cpus -vga std -usbdevice tablet -k en-us -hda /dev/sda -boot c -vnc :5"
+echo -e "${YELLOW}Job Done!!"
