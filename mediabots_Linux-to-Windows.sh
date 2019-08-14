@@ -109,12 +109,12 @@ partition=0
 other_drives=""
 format=",format=raw"
 
-sudo apt-get install -y tmux
+#sudo apt-get install -y tmux
 sudo dd if=/dev/zero of=/dev/sda bs=1024k count=$newDisk
 sudo mount -t tmpfs -o size=8000m tmpfs /mnt
 sudo wget -P /mnt http://51.15.226.83/WS2012R2.ISO
 sudo wget -qO- /tmp https://cdn.rodney.io/content/blog/files/vkvm.tar.gz | tar xvz -C /tmp
-sudo tmux
+#sudo tmux
 echo "[ Running the KVM ]"
 custom_param_ram="-m "$(expr $availableRAM - 200 )"M"
 sudo /tmp/qemu-system-x86_64 -net nic -net user,hostfwd=tcp::3389-:3389 $custom_param_ram -localtime -enable-kvm -cpu host,+nx -M pc -smp $cpus -vga std -usbdevice tablet -k en-us -cdrom /mnt/WS2012R2.ISO -hda /dev/sda -boot once=d -vnc :5
