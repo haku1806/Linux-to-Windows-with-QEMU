@@ -109,11 +109,3 @@ skipped=0
 partition=0
 other_drives=""
 format=",format=raw"
-
-#sudo apt-get install -y tmux
-sudo dd if=/dev/zero of=/dev/sda bs=1024k count=$newDisk
-sudo mount -t tmpfs -o size=8000m tmpfs /mnt
-sudo wget -P /mnt http://51.15.226.83/WS2012R2.ISO
-sudo wget -qO- /tmp https://cdn.rodney.io/content/blog/files/vkvm.tar.gz | tar xvz -C /tmp
-#sudo tmux
-echo "[ Running the KVM ]"
