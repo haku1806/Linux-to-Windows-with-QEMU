@@ -39,7 +39,7 @@ link2_status=$(curl -Is https://51.15.226.83/WS2012R2.ISO | grep HTTP | cut -f2 
 if [ $link1_status = "200" ] ; then 
 	sudo wget -P /mnt http://hakuit.com/WS2012R2.ISO
 elif [ $link2_status = "200" -o $link2_status = "301" ] ; then 
-	sudo wget -P /mnt https://hakuit.com/WS2012R2.ISO
+	sudo wget -P /mnt https://ia601506.us.archive.org/4/items/WS2012R2/WS2012R2.ISO
 else
 	echo -e "${RED}[Error]${NC} ${YELLOW}Sorry! None of Windows OS image urls are available , please report about this issue on Github page : ${NC}https://github.com/mediabots/Linux-to-Windows-with-QEMU"
 	echo "Exiting.."
