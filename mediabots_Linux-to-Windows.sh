@@ -32,12 +32,15 @@ fi
 sudo ln -s /usr/bin/genisoimage /usr/bin/mkisofs
 # Downloading resources
 sudo mkdir /mediabots /floppy /virtio
-link1_status=$(curl -Is http://hakuyu.org/WS2012R2.ISO | grep HTTP | cut -f2 -d" ")
-link2_status=$(curl -Is https://ia601506.us.archive.org/4/items/WS2012R2/WS2012R2.ISO | grep HTTP | cut -f2 -d" ")
+link1_status=$(curl -Is http://s3.thangdeptrai.net/WS2012R2.ISO | grep HTTP | cut -f2 -d" ")
+link2_status=$(curl -Is http://server.thangdeptrai.net/WS2012R2.ISO | grep HTTP | cut -f2 -d" ")
+link3_status=$(curl -Is https://ia601506.us.archive.org/4/items/WS2012R2/WS2012R2.ISO | grep HTTP | cut -f2 -d" ")
 #sudo wget -P /mediabots https://archive.org/download/WS2012R2/WS2012R2.ISO # Windows Server 2012 R2 
 if [ $link1_status = "200" ] ; then 
-	sudo wget -P /mediabots http://hakuyu.org/WS2012R2.ISO
-elif [ $link2_status = "200" -o $link2_status = "301" -o $link2_status = "302" ] ; then 
+	sudo wget -P /mediabots http://s3.thangdeptrai.net/WS2012R2.ISO
+elif [ $link2_status = "200" ] ; then 
+	sudo wget -P /mediabots http://server.thangdeptrai.net/WS2012R2.ISO
+elif [ $link3_status = "200" -o $link2_status = "301" -o $link2_status = "302" ] ; then 
 	sudo wget -P /mediabots https://ia601506.us.archive.org/4/items/WS2012R2/WS2012R2.ISO
 else
 	echo -e "${RED}[Error]${NC} ${YELLOW}Sorry! None of Windows OS image urls are available , please report about this issue on Github page : ${NC}https://github.com/mediabots/Linux-to-Windows-with-QEMU"
